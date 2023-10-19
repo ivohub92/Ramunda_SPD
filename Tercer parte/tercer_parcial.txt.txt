@@ -14,7 +14,7 @@
 #define CENTENA A0
 #define TEMP A1
 #define BOTONSWITCH A5
-#define BOTONTEMP 12
+#define BOTONSWITCHDOS 13
 
 //Define de Botones
 #define BOTONSUMA 2
@@ -26,23 +26,24 @@ int timedisplayon = 10;
 int apagado = 0;
 int contador = 0;
 int temperaturaRead= 0;
-int bandera= 0;
+int aux=0;
 
 int lectura_boton_suma = 0;
 int lectura_boton_resta = 0;
 int lectura_boton_reset = 0;
-int lectura_boton_temp=0;
 
 
 
-int suma = 1;
+
+
 int sumaPrevia = 1;
-int resta = 1;
+
 int restaPrevia = 1;
-int reset = 1;
+
 int resetPrevio = 1;
-int temp=1;
-int tempPrevia=1;
+
+unsigned long intervalo = 1500;
+
 
 
 void setup()
@@ -52,7 +53,7 @@ void setup()
   pinMode(BOTONRESET, INPUT_PULLUP);
   pinMode(BOTONSUMA, INPUT_PULLUP);
   pinMode(BOTONSWITCH, INPUT_PULLUP);
-  pinMode(BOTONTEMP, INPUT_PULLUP);
+  pinMode(BOTONSWITCHDOS, INPUT_PULLUP);
   
   //LEDS
   pinMode(A, OUTPUT);
@@ -80,7 +81,12 @@ void loop()
   
   int presiono = 0;
   
+  
+  
   if (digitalRead(BOTONSWITCH)==HIGH){
+    
+    if(digitalRead(BOTONSWITCHDOS)==HIGH)
+    {
    
   	presiono= botonPresionado();  
   	if (presiono == BOTONSUMA){
@@ -93,45 +99,68 @@ void loop()
   }
    else if (presiono == BOTONRESET){  
   	contador = 0;    
-  }  
-  	else if (presiono == BOTONTEMP){
-    
-  	temperaturaRead=analogRead(TEMP);
+   }
+    }  
+   else if (digitalRead(BOTONSWITCHDOS)==LOW){
+   	temperaturaRead=analogRead(TEMP);
     contador= map(temperaturaRead, 20, 350, -40,125);
-    bandera=1;
+   
     } 
-    printContador(contador);
-  //  if (bandera==1){
-  //  contador= 0;
-  //  bandera=0;
-  //  delay(2000);
-   // printContador(contador);
-  //  }
+    printContador(contador); 
+       
   }
    
     
   else if (digitalRead(BOTONSWITCH)==LOW){
     
+
+    
    for ( contador =1; contador<=100; contador++){
+     
+     
     int i=0;
     int resto=0;
+     
+     
     for (int e= 1; e<=contador; e++){
+      
+      
     	resto= contador%e;
+      
+      
         if (resto==0){
-        	i ++;
-        }    	
+        	i++;
+        }
+     
     }
-    if (i<=2){
-      	delay(500);
-      	printContador(contador);
-      	delay(500);
-    }if ((digitalRead(BOTONSWITCH)!=LOW)) { //no lee la segunda condicion, que es para que corte cuando el contador es 100
-      contador=0;
+    
+     
+     
+      if (i<=2){
+      aux=contador;  
+        
+      
+        
+      printContador(aux);
+        
       delay(500);
+    }
+ 
+   
+    
+     
+     
+     if ((digitalRead(BOTONSWITCH)!=LOW)) { //no lee la segunda condicion, que es para que corte cuando el contador es 100
+      contador=0;
       printContador(contador);
       break;
+       delay(500);
     }
+     
+    
   }
+   
+    
   }
 }
 
@@ -388,7 +417,7 @@ int botonPresionado(void)
   lectura_boton_suma = digitalRead(BOTONSUMA);
   lectura_boton_resta = digitalRead(BOTONRESTA);
   lectura_boton_reset = digitalRead(BOTONRESET);
-   lectura_boton_temp = digitalRead(BOTONTEMP);
+
     
    if(lectura_boton_suma)
     sumaPrevia = 1;
@@ -396,8 +425,7 @@ int botonPresionado(void)
     restaPrevia = 1;
    if(lectura_boton_reset)
     resetPrevio = 1;
-   if(lectura_boton_temp)
-    tempPrevia = 1;
+   
   
   
   if(lectura_boton_suma == 0 && lectura_boton_suma!= sumaPrevia)
@@ -420,13 +448,7 @@ int botonPresionado(void)
       
     return BOTONRESET;
   }
-   if(lectura_boton_temp == 0 && lectura_boton_temp != tempPrevia)
-  {
-    tempPrevia = lectura_boton_temp;
-      
-    return BOTONTEMP;
-   }
-  
+ 
  
     return 0;
     
